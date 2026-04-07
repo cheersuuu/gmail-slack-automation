@@ -7,7 +7,7 @@ from googleapiclient.discovery import build
 from slack_sdk import WebClient
 import anthropic
 
-ACTION_LABEL_ID = "Label_3095775824547419136"
+ACTION_LABEL_QUERY = 'label:"🔥 Action"'
 
 
 def get_gmail_service():
@@ -73,7 +73,7 @@ def main():
     results = (
         gmail.users()
         .messages()
-        .list(userId="me", q=f"label:{ACTION_LABEL_ID} is:unread", maxResults=20)
+        .list(userId="me", q=f"{ACTION_LABEL_QUERY} is:unread", maxResults=20)
         .execute()
     )
     messages = results.get("messages", [])
