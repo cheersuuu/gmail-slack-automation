@@ -122,7 +122,7 @@ def main():
         print("미읽음 Action 메일 없음.")
         return
 
-    slack = WebClient(token=os.environ["SLACK_BOT_TOKEN"])
+    slack = WebClient(token=os.environ["SLACK_USER_TOKEN"])
     my_user_id = os.environ["SLACK_USER_ID"]
     dm_channel = slack.conversations_open(users=[my_user_id])["channel"]["id"]
 
