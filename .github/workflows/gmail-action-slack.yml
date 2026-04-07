@@ -2,7 +2,7 @@ name: Gmail Action → Slack DM
 
 on:
   schedule:
-    - cron: "0 0-9 * * 1-5"  # 한국시간 09:00~18:00 매 시간 정각 (UTC 00:00~09:00, 평일)
+    - cron: "0 0-9 * * *"  # 한국시간 09:00~18:00 매 시간 정각 (UTC 00:00~09:00)
   workflow_dispatch:      # 수동 실행 가능
 
 jobs:
