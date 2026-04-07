@@ -30,12 +30,6 @@ jobs:
           echo "REFRESH_TOKEN 길이: ${#GMAIL_REFRESH_TOKEN}"
           echo "GEMINI_API_KEY 길이: ${#GEMINI_API_KEY}"
 
-      - name: 사용 가능한 Gemini 모델 조회
-        env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: |
-          curl -s "https://generativelanguage.googleapis.com/v1beta/models?key=$GEMINI_API_KEY" | python3 -c "import sys,json; [print(m['name']) for m in json.load(sys.stdin).get('models',[])]"
-
       - name: Gmail → Slack 실행
         env:
           GMAIL_CLIENT_ID: ${{ secrets.GMAIL_CLIENT_ID }}
