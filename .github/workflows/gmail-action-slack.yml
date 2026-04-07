@@ -26,9 +26,11 @@ jobs:
         env:
           GMAIL_REFRESH_TOKEN: ${{ secrets.GMAIL_REFRESH_TOKEN }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          SLACK_USER_TOKEN: ${{ secrets.SLACK_USER_TOKEN }}
         run: |
           echo "REFRESH_TOKEN 길이: ${#GMAIL_REFRESH_TOKEN}"
           echo "GEMINI_API_KEY 길이: ${#GEMINI_API_KEY}"
+          echo "SLACK_USER_TOKEN 앞 5자: ${SLACK_USER_TOKEN:0:5}"
 
       - name: Gmail → Slack 실행
         env:
