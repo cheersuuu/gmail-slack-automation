@@ -5,6 +5,7 @@ from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
 from slack_sdk import WebClient
+import google.generativeai as genai
 
 ACTION_LABEL_QUERY = 'label:"🔥 Action"'
 
@@ -46,17 +47,60 @@ def extract_body(message):
     return find_text(payload).strip()
 
 
-def format_message(subject, sender, snippet):
-    return (
-        f"📩 액션 필요 메일\n"
-        f"━━━━━━━━━━━━━━━━━━━━\n"
-        f"*제목* : {subject}\n"
-        f"*보낸 사람* : {sender}\n"
-        f"━━━━━━━━━━━━━━━━━━━━\n"
-        f"*📝 요약*\n"
-        f"{snippet}\n\n"
-        f"━━━━━━━━━━━━━━━━━━━━"
-    )
+PROMPT_TEMPLATE = """다음 이메일을 분석하고 아래 형식 그대로 출력해. 다른 말은 절대 붙이지 마.
+
+[Header rules]
+- 액션이 필요하면: 📩 액션 필요 메일
+- 답변 대기 중이면: 📩 대기 메일
+- 참고용이면: 📩 참고 메일
+
+[Importance rules]
+- 높음: urgent, deadline soon, complaint, finance, inventory, shipment, live campaign issue
+- 중간: review/reply needed but not urgent
+- 낮음: informational only
+
+[Category rules - 하나만 선택]
+발주 / 출고 / 재고 / 정산 / 광고 / 일정 / 문의 / 클레임 / 보고 / 계약 / 요청 / 공유 / 기타
+
+[Writing rules]
+- 한국어로만 작성
+- 짧고 실용적으로
+- 마감일/할 일 누락 금지
+- 암묵적 액션도 추론
+- 할 일 없으면 "해야 할 일: 없음"
+- 스레드에서 가장 최신 액션 우선
+
+[출력 형식]
+{{헤더}}
+━━━━━━━━━━━━━━━━━━━━
+*제목* : {subject}
+*보낸 사람* : {sender}
+━━━━━━━━━━━━━━━━━━━━
+*📝 요약*
+{{핵심 내용 2~3줄}}
+
+*✅ 할 일*
+- {{할 일 1}}
+- {{할 일 2}}
+
+*⏰ 마감*  {{마감일시, 없으면 "언급 없음"}}
+*🔥 우선순위*  {{높음 / 중간 / 낮음}}
+*🏷 카테고리*  {{카테고리}}
+━━━━━━━━━━━━━━━━━━━━
+
+이메일 내용:
+제목: {subject}
+발신자: {sender}
+
+{body}"""
+
+
+def summarize_email(subject, sender, body):
+    genai.configure(api_key=os.environ["GEMINI_API_KEY"])
+    model = genai.GenerativeModel("gemini-1.5-flash")
+    prompt = PROMPT_TEMPLATE.format(subject=subject, sender=sender, body=body[:3000])
+    response = model.generate_content(prompt)
+    return response.text
 
 
 def main():
@@ -90,7 +134,8 @@ def main():
         sender = headers.get("From", "Unknown")
         snippet = full.get("snippet", "").replace("&quot;", '"').replace("&gt;", ">").replace("&lt;", "<").replace("&amp;", "&")
 
-        message = format_message(subject, sender, snippet)
+        body = extract_body(full)
+        message = summarize_email(subject, sender, body)
 
         slack.chat_postMessage(
             channel=my_user_id,
