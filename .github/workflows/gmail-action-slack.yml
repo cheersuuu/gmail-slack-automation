@@ -20,6 +20,12 @@ jobs:
       - name: 의존성 설치
         run: pip install -r requirements.txt
 
+      - name: 환경변수 확인
+        env:
+          GMAIL_REFRESH_TOKEN: ${{ secrets.GMAIL_REFRESH_TOKEN }}
+        run: |
+          echo "REFRESH_TOKEN 길이: ${#GMAIL_REFRESH_TOKEN}"
+
       - name: Gmail → Slack 실행
         env:
           GMAIL_CLIENT_ID: ${{ secrets.GMAIL_CLIENT_ID }}
