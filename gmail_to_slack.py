@@ -101,7 +101,9 @@ def summarize_email(subject, sender, body):
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
     payload = {"contents": [{"parts": [{"text": prompt}]}]}
     response = requests.post(url, json=payload)
-    response.raise_for_status()
+    if not response.ok:
+        print(f"Gemini API 오류: {response.status_code} {response.text}")
+        response.raise_for_status()
     return response.json()["candidates"][0]["content"]["parts"][0]["text"]
 
 
