@@ -6,6 +6,7 @@ from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
 from slack_sdk import WebClient
 import requests
+import time
 
 ACTION_LABEL_QUERY = 'label:"🔥 Action"'
 
@@ -100,11 +101,16 @@ def summarize_email(subject, sender, body):
     prompt = PROMPT_TEMPLATE.format(subject=subject, sender=sender, body=body[:3000])
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
     payload = {"contents": [{"parts": [{"text": prompt}]}]}
-    response = requests.post(url, json=payload)
-    if not response.ok:
+    for attempt in range(3):
+        response = requests.post(url, json=payload)
+        if response.ok:
+            return response.json()["candidates"][0]["content"]["parts"][0]["text"]
+        if response.status_code == 503 and attempt < 2:
+            print(f"Gemini 503, {10}초 후 재시도 ({attempt+1}/3)...")
+            time.sleep(10)
+            continue
         print(f"Gemini API 오류: {response.status_code} {response.text}")
         response.raise_for_status()
-    return response.json()["candidates"][0]["content"]["parts"][0]["text"]
 
 
 def main():
