@@ -124,7 +124,6 @@ def main():
 
     slack = WebClient(token=os.environ["SLACK_BOT_TOKEN"])
     my_user_id = os.environ["SLACK_USER_ID"]
-    dm_channel = slack.conversations_open(users=[my_user_id])["channel"]["id"]
 
     for msg in messages:
         full = (
@@ -143,7 +142,7 @@ def main():
         message = summarize_email(subject, sender, body)
 
         slack.chat_postMessage(
-            channel=dm_channel,
+            channel=my_user_id,
             text=message,
         )
 
