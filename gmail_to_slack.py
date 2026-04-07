@@ -5,7 +5,7 @@ from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
 from slack_sdk import WebClient
-from google import genai
+import requests
 
 ACTION_LABEL_QUERY = 'label:"🔥 Action"'
 
@@ -96,10 +96,13 @@ PROMPT_TEMPLATE = """다음 이메일을 분석하고 아래 형식 그대로 �
 
 
 def summarize_email(subject, sender, body):
-    client = genai.Client(api_key=os.environ["GEMINI_API_KEY"].strip(), http_options={"api_version": "v1"})
+    api_key = os.environ["GEMINI_API_KEY"].strip()
     prompt = PROMPT_TEMPLATE.format(subject=subject, sender=sender, body=body[:3000])
-    response = client.models.generate_content(model="gemini-1.5-flash-latest", contents=prompt)
-    return response.text
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+    payload = {"contents": [{"parts": [{"text": prompt}]}]}
+    response = requests.post(url, json=payload)
+    response.raise_for_status()
+    return response.json()["candidates"][0]["content"]["parts"][0]["text"]
 
 
 def main():
