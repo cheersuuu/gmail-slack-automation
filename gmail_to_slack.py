@@ -98,7 +98,7 @@ PROMPT_TEMPLATE = """다음 이메일을 분석하고 아래 형식 그대로 �
 def summarize_email(subject, sender, body):
     client = genai.Client(api_key=os.environ["GEMINI_API_KEY"].strip())
     prompt = PROMPT_TEMPLATE.format(subject=subject, sender=sender, body=body[:3000])
-    response = client.models.generate_content(model="gemini-2.0-flash-lite", contents=prompt)
+    response = client.models.generate_content(model="gemini-1.5-flash-latest", contents=prompt)
     return response.text
 
 
