@@ -123,7 +123,7 @@ def main():
         return
 
     slack = WebClient(token=os.environ["SLACK_BOT_TOKEN"])
-    my_user_id = slack.auth_test()["user_id"]
+    my_user_id = os.environ["SLACK_USER_ID"]
     dm_channel = slack.conversations_open(users=[my_user_id])["channel"]["id"]
 
     for msg in messages:
