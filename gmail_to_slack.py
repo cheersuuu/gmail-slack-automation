@@ -98,7 +98,7 @@ PROMPT_TEMPLATE = """다음 이메일을 분석하고 아래 형식 그대로 �
 def summarize_email(subject, sender, body):
     api_key = os.environ["GEMINI_API_KEY"].strip()
     prompt = PROMPT_TEMPLATE.format(subject=subject, sender=sender, body=body[:3000])
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
     payload = {"contents": [{"parts": [{"text": prompt}]}]}
     response = requests.post(url, json=payload)
     if not response.ok:
