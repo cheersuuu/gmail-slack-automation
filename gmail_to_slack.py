@@ -10,6 +10,8 @@ import time
 
 ACTION_LABEL_QUERY = 'label:"01. 🔥Action"'
 
+NOTION_DB_ID = "33cb94e0-45f7-80fc-95b0-c23edfb43f7d"
+
 
 def get_gmail_service():
     creds = Credentials(
@@ -113,6 +115,33 @@ def summarize_email(subject, sender, body):
         response.raise_for_status()
 
 
+def create_notion_page(subject, summary, received_date, gmail_link):
+    token = os.environ.get("NOTION_TOKEN", "")
+    if not token:
+        print("NOTION_TOKEN not set, skipping Notion")
+        return
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json",
+        "Notion-Version": "2022-06-28",
+    }
+    props = {
+        "제목": {"title": [{"text": {"content": subject[:2000]}}]},
+        "상태": {"select": {"name": "Action"}},
+        "요약": {"rich_text": [{"text": {"content": summary[:2000] if summary else ""}}]},
+    }
+    if received_date:
+        props["수신일"] = {"date": {"start": received_date}}
+    if gmail_link:
+        props["링크"] = {"url": gmail_link}
+    data = {"parent": {"database_id": NOTION_DB_ID}, "properties": props}
+    resp = requests.post("https://api.notion.com/v1/pages", headers=headers, json=data)
+    if resp.status_code == 200:
+        print(f"Notion 저장 완료: {subject}")
+    else:
+        print(f"Notion 저장 실패: {resp.status_code} {resp.text[:200]}")
+
+
 def main():
     gmail = get_gmail_service()
 
@@ -152,6 +181,10 @@ def main():
             channel=dm_channel,
             text=message,
         )
+        # Notion 저장
+        gmail_link = f"https://mail.google.com/mail/u/0/#inbox/{msg[\"id\"]}"
+        create_notion_page(subject, message, None, gmail_link)
+
 
         gmail.users().messages().modify(
             userId="me",
