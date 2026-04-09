@@ -182,7 +182,8 @@ def main():
             text=message,
         )
         # Notion 저장
-        gmail_link = f"https://mail.google.com/mail/u/0/#inbox/{msg[\"id\"]}"
+        msg_id = msg["id"]
+        gmail_link = f"https://mail.google.com/mail/u/0/#inbox/{msg_id}"
         create_notion_page(subject, message, None, gmail_link)
 
 
