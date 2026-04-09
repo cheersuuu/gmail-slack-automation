@@ -8,7 +8,7 @@ from slack_sdk import WebClient
 import requests
 import time
 
-ACTION_LABEL_QUERY = 'label:"🔥 Action"'
+ACTION_LABEL_QUERY = 'label:"01. 🔥Action"'
 
 
 def get_gmail_service():
